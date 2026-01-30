@@ -1,0 +1,5 @@
+{
+  "name": "EXhOrizon 巡演计划档案",
+  "description": "结合 EXO Planet #6 视觉风格的专业演唱会行程记录仪。支持详细航段、住宿、门票全自动算费及 Excel/JSON 导入导出。",
+  "requestFramePermissions": []
+}

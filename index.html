@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Planner - EXhOrizon Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-serif-epic { font-family: 'Cinzel', serif; }
+  .horizon-glow {
+    background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0) 70%);
+  }
+  .card-glass {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* 日期输入框包装容器 */
+  .date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* 隐藏浏览器原生日期提示文字（兼容 Chrome/Edge/Safari） */
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="datetime-local"]::-webkit-datetime-edit {
+    color: inherit;
+    transition: color 0.2s;
+  }
+  
+  input[type="date"].is-empty::-webkit-datetime-edit,
+  input[type="datetime-local"].is-empty::-webkit-datetime-edit {
+    color: transparent !important;
+  }
+
+  /* 自定义“年 / 月 / 日”占位符 */
+  .date-custom-placeholder {
+    position: absolute;
+    left: 1.25rem;
+    pointer-events: none;
+    color: #475569; /* slate-600 */
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 10;
+  }
+
+  /* 当获得焦点或已有内容时，隐藏自定义占位符并显示原生文字/内容 */
+  input:focus + .date-custom-placeholder,
+  input:not(.is-empty) + .date-custom-placeholder {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  input:focus::-webkit-datetime-edit,
+  input:not(.is-empty)::-webkit-datetime-edit {
+    color: white !important;
+  }
+
+  /* 统一日期控件点击区域 */
+  input[type="date"], input[type="datetime-local"] {
+    min-height: 3.25rem;
+    cursor: text;
+  }
+</style>
+</head>
+<body class="bg-[#0f172a] text-slate-200 antialiased min-h-screen">
+    <div id="root"></div>
+</body>
+</html>
