@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif-epic: "Cinzel", serif;
+}
+
+.horizon-glow {
+  background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0) 70%);
+}
+
+.card-glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 日期输入框包装容器 */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 隐藏浏览器原生日期提示文字（兼容 Chrome/Edge/Safari） */
+input[type="date"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit {
+  color: inherit;
+  transition: color 0.2s;
+}
+
+input[type="date"].is-empty::-webkit-datetime-edit,
+input[type="datetime-local"].is-empty::-webkit-datetime-edit {
+  color: transparent !important;
+}
+
+/* 自定义“年 / 月 / 日”占位符 */
+.date-custom-placeholder {
+  position: absolute;
+  left: 1.25rem;
+  pointer-events: none;
+  color: #475569; /* slate-600 */
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+/* 当获得焦点或已有内容时，隐藏自定义占位符并显示原生文字/内容 */
+input:focus + .date-custom-placeholder,
+input:not(.is-empty) + .date-custom-placeholder {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+input:focus::-webkit-datetime-edit,
+input:not(.is-empty)::-webkit-datetime-edit {
+  color: white !important;
+}
+
+/* 统一日期控件点击区域 */
+input[type="date"], input[type="datetime-local"] {
+  min-height: 3.25rem;
+  cursor: text;
+}
+
+@media print {
+  .no-print, button, .fixed.top-0, .no-print-all {
+    display: none !important;
+  }
+  header {
+    padding: 2rem 0 !important;
+    color: black !important;
+  }
+  header * {
+    color: black !important;
+  }
+  .view-modal-content {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+    border: none !important;
+  }
+  .view-modal-content * {
+    color: black !important;
+    border-color: #eee !important;
+  }
+  .bg-[#0f172a], body {
+    background: white !important;
+    color: black !important;
+  }
+  .card-glass {
+    background: white !important;
+    border: 1px solid #eee !important;
+    backdrop-filter: none !important;
+    color: black !important;
+    break-inside: avoid;
+  }
+  .card-glass * {
+    color: black !important;
+  }
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}

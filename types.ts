@@ -12,6 +12,7 @@ export interface TicketItem {
 export interface FlightSegment {
   id: string;
   flightNo: string;    // 航班号
+  seatNumber?: string; // 座位号
   depAirport: string;  // 起飞机场
   arrAirport: string;  // 到达机场
   depTime: string;     // 起飞时间 (YYYY-MM-DD HH:mm)
@@ -38,6 +39,8 @@ export interface ConcertPlan {
   departureFlights: FlightSegment[];
   returnFlights: FlightSegment[];
   hotels: HotelItem[];
+  
+  otherExpenses?: number; // 其他开销
   
   // 以下两个字段保留兼容性或可根据子项逻辑聚合，但本版本移至子项管理
   flightStatus: BookingStatus; 

@@ -30,11 +30,13 @@ const App: React.FC = () => {
     const ticketTotal = plan.tickets.reduce((s, x) => s + (x.price || 0), 0);
     const hotelTotal = plan.hotels.reduce((s, x) => s + (x.price || 0), 0);
     const transportTotal = [...plan.departureFlights, ...plan.returnFlights].reduce((s, x) => s + (x.price || 0), 0);
+    const otherTotal = plan.otherExpenses || 0;
     return {
       ticketTotal,
       hotelTotal,
       transportTotal,
-      grandTotal: ticketTotal + hotelTotal + transportTotal
+      otherTotal,
+      grandTotal: ticketTotal + hotelTotal + transportTotal + otherTotal
     };
   };
 
@@ -64,6 +66,10 @@ const App: React.FC = () => {
         return 0;
       });
   }, [plans, searchTerm, sortField, sortOrder]);
+
+  const allPlansTotal = useMemo(() => {
+    return plans.reduce((sum, plan) => sum + calculatePlanTotals(plan).grandTotal, 0);
+  }, [plans]);
 
   const handleAddPlan = (newPlan: Omit<ConcertPlan, 'id' | 'createdAt'>) => {
     const plan: ConcertPlan = { ...newPlan, id: crypto.randomUUID(), createdAt: Date.now() };
@@ -111,7 +117,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 relative">
-        <div className="flex flex-col md:flex-row gap-4 mb-10 md:mb-12">
+        <div className="flex flex-col md:flex-row gap-4 mb-10 md:mb-12 no-print">
           <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4 group-focus-within:text-white transition-colors" />
             <input 
@@ -131,6 +137,7 @@ const App: React.FC = () => {
                   <div className="bg-slate-900 border border-white/10 rounded-2xl p-2 w-40 shadow-2xl">
                     <button onClick={() => exportToJSON(plans)} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><FileJson className="w-4 h-4" /> JSON BACKUP</button>
                     <button onClick={() => exportToExcel(plans)} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><FileSpreadsheet className="w-4 h-4" /> EXCEL REPORT</button>
+                    <button onClick={() => window.print()} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><Download className="w-4 h-4" /> PRINT SUMMARY</button>
                   </div>
                 </div>
              </div>
@@ -196,6 +203,15 @@ const App: React.FC = () => {
           })}
         </div>
 
+        {plans.length > 0 && (
+          <div className="mt-16 md:mt-24 flex flex-col items-center md:items-end border-t border-white/5 pt-12">
+            <div className="px-10 py-6 bg-white/5 border border-white/10 rounded-[2.5rem] backdrop-blur-md shadow-2xl">
+              <div className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase mb-2">ALL JOURNEYS TOTAL EXPENDITURE</div>
+              <div className="text-4xl md:text-5xl font-black text-white italic tracking-tighter">¥{allPlansTotal.toLocaleString()}</div>
+            </div>
+          </div>
+        )}
+
         {filteredAndSortedPlans.length === 0 && (
           <div className="text-center py-20 md:py-40 border-t border-white/5 mt-10 md:mt-20 opacity-40">
             <div className="font-serif-epic text-xl md:text-2xl tracking-[0.5em] uppercase mb-6">NO HORIZONS FOUND</div>
@@ -207,10 +223,15 @@ const App: React.FC = () => {
       {viewingPlan && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setViewingPlan(null)} />
-          <div className="relative w-full md:max-w-xl bg-[#0f172a] h-full shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-500 border-l border-white/5">
+          <div className="relative w-full md:max-w-xl bg-[#0f172a] h-full shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-500 border-l border-white/5 view-modal-content">
             <div className="sticky top-0 bg-[#0f172a]/80 backdrop-blur-xl px-6 md:px-10 py-6 md:py-8 flex justify-between items-center border-b border-white/5 z-20">
                <div className="font-serif-epic text-[10px] md:text-xs tracking-[0.4em] text-white/40 uppercase">ITINERARY DETAILS</div>
-               <button onClick={() => setViewingPlan(null)} className="p-2 text-slate-500 hover:text-white"><X className="w-6 md:w-8 h-6 md:h-8" /></button>
+               <div className="flex items-center gap-2">
+                 <button onClick={() => window.print()} className="p-2 text-slate-500 hover:text-white flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                   <Download className="w-4 h-4" /> PRINT PDF
+                 </button>
+                 <button onClick={() => setViewingPlan(null)} className="p-2 text-slate-500 hover:text-white"><X className="w-6 md:w-8 h-6 md:h-8" /></button>
+               </div>
             </div>
 
             <div className="px-6 md:px-10 py-10 space-y-12 md:space-y-16 pb-40">
@@ -289,10 +310,16 @@ const App: React.FC = () => {
               </DetailSection>
 
               <DetailSection title="MEMO" icon={<MessageSquare className="w-5 h-5" />}>
-                 <div className="bg-white/5 p-6 md:p-8 rounded-[2rem] border border-white/5">
-                    <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed tracking-wide italic">
-                       {viewingPlan.remarks || 'No remarks recorded.'}
-                    </p>
+                 <div className="space-y-6">
+                    <div className="bg-white/5 p-6 md:p-8 rounded-[2rem] border border-white/5">
+                       <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">其他开销 / OTHER EXPENSES</div>
+                       <div className="text-xl font-black text-white mb-6">¥{(viewingPlan.otherExpenses || 0).toLocaleString()}</div>
+                       
+                       <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">备注信息 / REMARKS</div>
+                       <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed tracking-wide italic">
+                          {viewingPlan.remarks || 'No remarks recorded.'}
+                       </p>
+                    </div>
                  </div>
               </DetailSection>
 
@@ -334,7 +361,10 @@ const FlightTimeline: React.FC<{ title: string, segments: any[], getWeekday: (s:
       <div key={i} className="bg-white/5 p-5 md:p-6 rounded-[2rem] border border-white/5 space-y-4">
          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
             <div className="flex flex-col flex-1">
-              <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{f.flightNo || '未知航班'}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{f.flightNo || '未知航班'}</span>
+                {f.seatNumber && <span className="text-[10px] font-black text-white/20 uppercase tracking-widest border border-white/10 px-2 py-0.5 rounded-md">SEAT: {f.seatNumber}</span>}
+              </div>
               <div className="flex items-center mt-2 gap-3">
                 <div className="text-sm font-bold text-white">
                   {f.depAirport} 

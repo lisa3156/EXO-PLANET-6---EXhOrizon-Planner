@@ -17,6 +17,7 @@ const ConcertForm: React.FC<ConcertFormProps> = ({ onClose, onSubmit, initialDat
     departureFlights: initialData?.departureFlights || [{ id: crypto.randomUUID(), flightNo: '', depAirport: '', arrAirport: '', depTime: '', arrTime: '', price: 0, status: 'Pending' as BookingStatus }],
     returnFlights: initialData?.returnFlights || [{ id: crypto.randomUUID(), flightNo: '', depAirport: '', arrAirport: '', depTime: '', arrTime: '', price: 0, status: 'Pending' as BookingStatus }],
     hotels: initialData?.hotels || [{ id: crypto.randomUUID(), name: '', checkIn: '', checkOut: '', price: 0, status: 'Pending' as BookingStatus }],
+    otherExpenses: initialData?.otherExpenses || 0,
     remarks: initialData?.remarks || '',
     flightStatus: initialData?.flightStatus || 'Pending' as BookingStatus,
     hotelStatus: initialData?.hotelStatus || 'Pending' as BookingStatus,
@@ -31,7 +32,8 @@ const ConcertForm: React.FC<ConcertFormProps> = ({ onClose, onSubmit, initialDat
     const t = formData.tickets.reduce((s, x) => s + (x.price || 0), 0);
     const f = [...formData.departureFlights, ...formData.returnFlights].reduce((s, x) => s + (x.price || 0), 0);
     const h = formData.hotels.reduce((s, x) => s + (x.price || 0), 0);
-    return t + f + h;
+    const o = formData.otherExpenses || 0;
+    return t + f + h + o;
   };
 
   const getWeekday = (dateStr: string) => {
@@ -120,7 +122,7 @@ const ConcertForm: React.FC<ConcertFormProps> = ({ onClose, onSubmit, initialDat
               <React.Fragment key={type}>
                 <div className="flex justify-between items-center px-2 mt-4">
                   <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{type === 'departureFlights' ? '去程航段' : '返程航段'}</h4>
-                  <button type="button" onClick={() => setFormData(p => ({...(p as any), [type]: [...(p as any)[type], {id: crypto.randomUUID(), flightNo:'', depAirport:'', arrAirport:'', depTime:'', arrTime:'', price:0, status: 'Pending'}]}))} className="text-[9px] font-black text-white/30 hover:text-white uppercase transition-colors">+ 增加条目</button>
+                  <button type="button" onClick={() => setFormData(p => ({...(p as any), [type]: [...(p as any)[type], {id: crypto.randomUUID(), flightNo:'', seatNumber: '', depAirport:'', arrAirport:'', depTime:'', arrTime:'', price:0, status: 'Pending'}]}))} className="text-[9px] font-black text-white/30 hover:text-white uppercase transition-colors">+ 增加条目</button>
                 </div>
                 {(formData as any)[type].map((f: any, i: number) => (
                   <div key={f.id} className="p-6 md:p-8 bg-white/5 rounded-[2rem] border border-white/5 space-y-6">
@@ -131,8 +133,9 @@ const ConcertForm: React.FC<ConcertFormProps> = ({ onClose, onSubmit, initialDat
                         <button type="button" onClick={() => setFormData(p => ({...(p as any), [type]: (p as any)[type].filter((x: any) => x.id !== f.id)}))} className="text-red-900 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="col-span-1"><label className={labelClass}>航班号</label><input value={f.flightNo} onChange={e => updateItem(type, f.id, {flightNo: e.target.value})} className={inputClass} placeholder="航班号" /></div>
+                      <div className="col-span-1"><label className={labelClass}>座位号</label><input value={f.seatNumber} onChange={e => updateItem(type, f.id, {seatNumber: e.target.value})} className={inputClass} placeholder="座位号" /></div>
                       <div className="col-span-1"><label className={labelClass}>单段价格</label><input type="number" value={f.price} onFocus={handleNumberFocus} onChange={e => updateItem(type, f.id, {price: Number(e.target.value)})} className={inputClass} /></div>
                       <div className="col-span-2"><label className={labelClass}>起/降机场</label>
                         <div className="flex flex-col md:flex-row items-center gap-2">
@@ -222,14 +225,27 @@ const ConcertForm: React.FC<ConcertFormProps> = ({ onClose, onSubmit, initialDat
             ))}
           </div>
 
-          <div className="space-y-4">
-             <label className={labelClass}>备注 / MEMO</label>
-             <textarea 
-               value={formData.remarks} 
-               onChange={e => setFormData({...formData, remarks: e.target.value})} 
-               className={`${inputClass} min-h-[120px] resize-none py-4`} 
-               placeholder="记录其他重要信息..."
-             />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-4">
+               <label className={labelClass}>其他开销金额 (¥)</label>
+               <input 
+                 type="number"
+                 value={formData.otherExpenses} 
+                 onFocus={handleNumberFocus}
+                 onChange={e => setFormData({...formData, otherExpenses: Number(e.target.value)})} 
+                 className={inputClass} 
+                 placeholder="例如：周边、餐饮等..."
+               />
+            </div>
+            <div className="space-y-4">
+               <label className={labelClass}>备注 / MEMO</label>
+               <textarea 
+                 value={formData.remarks} 
+                 onChange={e => setFormData({...formData, remarks: e.target.value})} 
+                 className={`${inputClass} min-h-[120px] resize-none py-4`} 
+                 placeholder="记录其他重要信息..."
+               />
+            </div>
           </div>
 
           <div className="fixed md:absolute bottom-0 left-0 right-0 bg-[#0f172a] md:bg-[#0f172a]/80 md:backdrop-blur-xl pt-6 md:pt-10 pb-6 md:pb-8 border-t border-white/5 z-50 px-6 md:px-12">
