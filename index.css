@@ -70,14 +70,18 @@ input[type="date"], input[type="datetime-local"] {
     display: none !important;
   }
   header {
-    padding: 2rem 0 !important;
+    padding: 1rem 0 !important;
     color: black !important;
+    border-bottom: 2px solid #000 !important;
+    margin-bottom: 2rem !important;
   }
   header * {
     color: black !important;
   }
   .view-modal-content {
-    position: static !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     max-width: none !important;
     height: auto !important;
@@ -85,21 +89,29 @@ input[type="date"], input[type="datetime-local"] {
     background: white !important;
     color: black !important;
     border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .view-modal-content * {
     color: black !important;
-    border-color: #eee !important;
+    border-color: #ddd !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
-  .bg-[#0f172a], body {
+  .bg-[#0f172a], body, .fixed.inset-0 {
     background: white !important;
     color: black !important;
   }
   .card-glass {
     background: white !important;
-    border: 1px solid #eee !important;
+    border: 1px solid #ddd !important;
     backdrop-filter: none !important;
     color: black !important;
     break-inside: avoid;
+    margin-bottom: 1.5rem !important;
+    padding: 1.5rem !important;
+    border-radius: 0 !important;
   }
   .card-glass * {
     color: black !important;
@@ -107,5 +119,41 @@ input[type="date"], input[type="datetime-local"] {
   main {
     max-width: none !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
+  .page-break {
+    page-break-before: always;
+  }
+  /* 隐藏不必要的装饰 */
+  .horizon-glow, .absolute, .StatusDot {
+    display: none !important;
+  }
+  .relative {
+    position: static !important;
+  }
+  /* 调整间距 */
+  .space-y-12, .space-y-16 {
+    gap: 1.5rem !important;
+  }
+  .pb-40 {
+    padding-bottom: 0 !important;
+  }
+  
+  /* 全量报告模式 */
+  body.print-all-mode main, 
+  body.print-all-mode header,
+  body.print-all-mode .fixed {
+    display: none !important;
+  }
+  
+  body.print-all-mode .print-report-all {
+    display: block !important;
+    background: white !important;
+    color: black !important;
+    padding: 2rem !important;
+  }
+}
+
+.print-report-all {
+  display: none;
 }

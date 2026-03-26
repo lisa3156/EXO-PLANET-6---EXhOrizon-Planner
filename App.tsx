@@ -137,7 +137,7 @@ const App: React.FC = () => {
                   <div className="bg-slate-900 border border-white/10 rounded-2xl p-2 w-40 shadow-2xl">
                     <button onClick={() => exportToJSON(plans)} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><FileJson className="w-4 h-4" /> JSON BACKUP</button>
                     <button onClick={() => exportToExcel(plans)} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><FileSpreadsheet className="w-4 h-4" /> EXCEL REPORT</button>
-                    <button onClick={() => window.print()} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><Download className="w-4 h-4" /> PRINT SUMMARY</button>
+                    <button onClick={() => { document.body.classList.add('print-all-mode'); window.print(); document.body.classList.remove('print-all-mode'); }} className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl text-[10px] font-bold flex items-center gap-2 uppercase tracking-tighter"><Download className="w-4 h-4" /> FULL DETAILED PDF</button>
                   </div>
                 </div>
              </div>
@@ -339,6 +339,118 @@ const App: React.FC = () => {
           initialData={editingPlan} 
         />
       )}
+
+      {/* FULL DETAILED PRINT REPORT (Hidden on screen) */}
+      <div className="print-report-all">
+        <header className="text-center mb-10 border-b-2 border-black pb-6">
+           <h1 className="text-3xl font-bold uppercase tracking-widest text-black">EXhOrizon - Full Itinerary Report</h1>
+           <p className="text-sm text-slate-600 mt-2">Generated on {new Date().toLocaleDateString()}</p>
+        </header>
+        {plans.map((plan, index) => {
+          const totals = calculatePlanTotals(plan);
+          return (
+            <div key={plan.id} className={`${index > 0 ? 'page-break' : ''} py-10 border-b border-gray-200 last:border-0 text-black`}>
+              <div className="text-center space-y-4 mb-10">
+                <div className="inline-block px-4 py-1.5 border border-black rounded-full text-[9px] font-black text-black tracking-[0.3em] uppercase">{plan.city}</div>
+                <h2 className="text-3xl font-black text-black tracking-tighter leading-tight">{plan.concertName}</h2>
+              </div>
+
+              <div className="space-y-10">
+                {/* SESSIONS */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold border-b border-black pb-2 uppercase tracking-widest">SESSIONS</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    {plan.tickets.map((t, i) => (
+                      <div key={t.id} className="flex justify-between items-center py-2">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest">SESSION {i+1}</div>
+                          <div className="text-sm font-bold">{t.date} <span className="text-[10px] font-normal ml-2">{getWeekday(t.date)}</span></div>
+                          <div className="text-xs text-slate-500 italic">{t.seat || '无位置信息'}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">¥{t.price}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* TRANSPORTATION */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold border-b border-black pb-2 uppercase tracking-widest">TRANSPORTATION</h4>
+                  <div className="space-y-6">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.4em]">去程航线</div>
+                    {plan.departureFlights.map((f, i) => (
+                      <div key={i} className="flex justify-between items-center py-2">
+                        <div className="flex-1">
+                          <div className="text-[10px] font-bold uppercase tracking-widest">{f.flightNo} {f.seatNumber ? `(SEAT: ${f.seatNumber})` : ''}</div>
+                          <div className="text-sm font-bold">{f.depAirport} → {f.arrAirport}</div>
+                          <div className="text-[10px] text-slate-600">{f.depTime} → {f.arrTime}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">¥{f.price || 0}</div>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="text-[9px] font-bold uppercase tracking-[0.4em]">返程航线</div>
+                    {plan.returnFlights.map((f, i) => (
+                      <div key={i} className="flex justify-between items-center py-2">
+                        <div className="flex-1">
+                          <div className="text-[10px] font-bold uppercase tracking-widest">{f.flightNo} {f.seatNumber ? `(SEAT: ${f.seatNumber})` : ''}</div>
+                          <div className="text-sm font-bold">{f.depAirport} → {f.arrAirport}</div>
+                          <div className="text-[10px] text-slate-600">{f.depTime} → {f.arrTime}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">¥{f.price || 0}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ACCOMMODATIONS */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold border-b border-black pb-2 uppercase tracking-widest">ACCOMMODATIONS</h4>
+                  <div className="space-y-4">
+                    {plan.hotels.map((h, i) => (
+                      <div key={h.id} className="flex justify-between items-center py-2">
+                        <div className="flex-1">
+                          <div className="text-sm font-bold">{h.name || '未命名住宿'}</div>
+                          <div className="text-[10px] font-bold tracking-widest uppercase mt-1">
+                            {h.checkIn} → {h.checkOut}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">¥{h.price}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* MEMO */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold border-b border-black pb-2 uppercase tracking-widest">MEMO</h4>
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold uppercase tracking-widest">其他开销: ¥{(plan.otherExpenses || 0).toLocaleString()}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest">备注:</div>
+                    <p className="text-xs text-slate-700 italic whitespace-pre-wrap">{plan.remarks || 'No remarks recorded.'}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-6 border-t-2 border-black">
+                  <div className="font-bold uppercase text-[10px] tracking-[0.3em]">GRAND TOTAL</div>
+                  <div className="text-xl font-bold italic">¥{totals.grandTotal.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div className="mt-20 pt-10 border-t-4 border-black text-right">
+           <div className="text-xs font-bold uppercase tracking-[0.4em] mb-2">ALL JOURNEYS TOTAL EXPENDITURE</div>
+           <div className="text-4xl font-black italic">¥{allPlansTotal.toLocaleString()}</div>
+        </div>
+      </div>
     </div>
   );
 };
